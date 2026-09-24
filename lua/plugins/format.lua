@@ -15,6 +15,7 @@ return {
 				markdown = { "prettierd" },
 				proto = { "buf" },
 				python = { "ruff_fix", "ruff_format" },
+				sh = { "shfmt" },
 				terraform = { "terraform_fmt" },
 				["terraform-vars"] = { "terraform_fmt" },
 				typescript = { "prettierd" },

@@ -9,6 +9,10 @@ return {
 
 		local available = ts.get_available()
 
+		-- Filetypes whose name doesn't match a parser name; without this
+		-- Neovim looks for a parser called "sh" and finds nothing.
+		vim.treesitter.language.register("bash", { "sh" })
+
 		local function start(buf, lang)
 			vim.treesitter.start(buf, lang)
 			vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"

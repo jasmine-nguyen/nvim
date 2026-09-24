@@ -25,6 +25,7 @@ return {
 				markdown = { "marksman", "markdownlint", "prettierd" },
 				proto = { "buf", "protolint" },
 				python = { "pyright", "ruff" },
+				sh = { "bash-language-server", "shfmt" },
 				terraform = { "terraform-ls" },
 				["terraform-vars"] = { "terraform-ls" },
 				typescript = { "typescript-language-server", "prettierd" },
@@ -34,6 +35,14 @@ return {
 			}
 
 			local registry = require("mason-registry")
+
+			-- Re-runs the LSP autostart for every open buffer. Servers are
+			-- installed on demand, so the first buffer of a filetype opens
+			-- before its server exists and fails to spawn; this picks it up
+			-- once the install lands, instead of waiting for a restart.
+			local function retry_lsp_start()
+				pcall(vim.cmd, "doautoall nvim.lsp.enable FileType")
+			end
 
 			local function ensure_installed(names)
 				-- Only hit the network (registry.refresh) when something is
@@ -53,7 +62,11 @@ return {
 					for _, name in ipairs(names) do
 						local ok, pkg = pcall(registry.get_package, name)
 						if ok and not pkg:is_installed() then
-							pkg:install()
+							pkg:install(nil, function(success)
+								if success then
+									vim.schedule(retry_lsp_start)
+								end
+							end)
 						end
 					end
 				end)
@@ -74,8 +87,7 @@ return {
 				end,
 			})
 
-			-- Mason loads at VeryLazy, after the first file's FileType event;
-			-- cover buffers that are already open.
+			-- Cover buffers that are already open when mason loads.
 			for _, buf in ipairs(vim.api.nvim_list_bufs()) do
 				if vim.api.nvim_buf_is_loaded(buf) then
 					handle(vim.bo[buf].filetype)
@@ -85,7 +97,10 @@ return {
 	},
 	{
 		"neovim/nvim-lspconfig",
-		dependencies = { "saghen/blink.cmp" },
+		-- mason is a dependency so its bin dir is on PATH before any
+		-- server is started; otherwise the first file of a session tries
+		-- to spawn servers that mason hasn't put on PATH yet.
+		dependencies = { "saghen/blink.cmp", "williamboman/mason.nvim" },
 		event = { "BufReadPre", "BufNewFile" },
 		config = function()
 			-- Applied to every server; per-server configs below only add extras
@@ -167,6 +182,7 @@ return {
 
 			vim.lsp.enable({
 				"apex_ls",
+				"bashls",
 				"docker_compose_language_service",
 				"dockerls",
 				"golangci_lint_ls",
