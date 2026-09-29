@@ -34,7 +34,7 @@ They make up everything.
 					{ icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
 					{
 						icon = " ",
-						key = "g",
+						key = "/",
 						desc = "Find Text",
 						action = ":lua Snacks.dashboard.pick('live_grep')",
 					},

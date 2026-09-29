@@ -180,6 +180,36 @@ return {
 				},
 			})
 
+			vim.api.nvim_create_autocmd("BufWritePre", {
+				group = vim.api.nvim_create_augroup("lsp-auto-import", { clear = true }),
+				pattern = "*.py",
+				callback = function(ev)
+					local clients = vim.lsp.get_clients({ bufnr = ev.buf, name = "pyright" })
+					if #clients == 0 then
+						return
+					end
+					local params = {
+						textDocument = vim.lsp.util.make_text_document_params(ev.buf),
+						range = {
+							start = { line = 0, character = 0 },
+							["end"] = { line = vim.api.nvim_buf_line_count(ev.buf), character = 0 },
+						},
+						context = {
+							only = { "source.addMissingImports" },
+							diagnostics = vim.diagnostic.get(ev.buf),
+						},
+					}
+					local result = clients[1]:request_sync("textDocument/codeAction", params, 3000, ev.buf)
+					if result and result.result then
+						for _, action in ipairs(result.result) do
+							if action.edit then
+								vim.lsp.util.apply_workspace_edit(action.edit, clients[1].offset_encoding)
+							end
+						end
+					end
+				end,
+			})
+
 			vim.lsp.enable({
 				"apex_ls",
 				"bashls",
