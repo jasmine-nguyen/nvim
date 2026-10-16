@@ -5,12 +5,32 @@ return {
 		cmd = "Mason",
 		build = ":MasonUpdate",
 		config = function()
-			require("mason").setup()
+			-- Local registry for servers the official mason registry doesn't
+			-- package. Bump the version in `source.id` to upgrade.
+			package.preload["mason-local-registry"] = function()
+				return { ["agentscript-lsp"] = "mason-local-registry.agentscript-lsp" }
+			end
+			package.preload["mason-local-registry.agentscript-lsp"] = function()
+				return {
+					name = "agentscript-lsp",
+					description = "Salesforce Agentforce Agent Script language server.",
+					homepage = "https://github.com/salesforce/agentscript",
+					licenses = { "MIT" },
+					languages = { "Agent Script" },
+					categories = { "LSP" },
+					source = { id = "pkg:npm/%40sf-agentscript/lsp-server@2.3.33" },
+					bin = { ["agentscript-lsp"] = "npm:agentscript-lsp" },
+				}
+			end
+			require("mason").setup({
+				registries = { "github:mason-org/mason-registry", "lua:mason-local-registry" },
+			})
 
 			-- Install tools on demand: only when a file of a type that uses
 			-- them is opened, so machines that never see e.g. go or terraform
 			-- never download those servers (and never error on them).
 			local tools_by_ft = {
+				agentscript = { "agentscript-lsp" },
 				apex = { "prettier" },
 				css = { "prettierd" },
 				dockerfile = { "dockerfile-language-server" },
@@ -127,6 +147,14 @@ return {
 				end,
 			})
 
+			-- Agent Script (Agentforce) server; not in lspconfig. Installed via
+			-- the local mason registry in the mason config above.
+			vim.lsp.config("agentscript_ls", {
+				cmd = { "agentscript-lsp", "--stdio" },
+				filetypes = { "agentscript" },
+				root_markers = { "sfdx-project.json", ".git" },
+			})
+
 			-- Python server setup
 			vim.lsp.config("pyright", {
 				before_init = function(_, config)
@@ -211,6 +239,7 @@ return {
 			})
 
 			vim.lsp.enable({
+				"agentscript_ls",
 				"apex_ls",
 				"bashls",
 				"docker_compose_language_service",

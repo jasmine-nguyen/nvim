@@ -87,6 +87,8 @@ vim.filetype.add({
 		-- `.tf` defaults to the legacy `tf` filetype on empty/new files
 		-- (Neovim's detection is content-based), which blocks terraform-ls.
 		tf = "terraform",
+		-- Salesforce Agentforce Agent Script
+		agent = "agentscript",
 	},
 	pattern = {
 		[".*/*.cls"] = "apex",

@@ -7,6 +7,23 @@ return {
 		local ts = require("nvim-treesitter")
 		ts.setup()
 
+		-- Agent Script (Agentforce) isn't in nvim-treesitter; register the
+		-- grammar from Salesforce's repo so on-demand install picks it up.
+		-- Must run before get_available(), which fires TSUpdate.
+		vim.api.nvim_create_autocmd("User", {
+			pattern = "TSUpdate",
+			callback = function()
+				require("nvim-treesitter.parsers").agentscript = {
+					install_info = {
+						url = "https://github.com/salesforce/agentscript",
+						branch = "main",
+						location = "packages/parser-tree-sitter",
+						queries = "packages/parser-tree-sitter/queries",
+					},
+				}
+			end,
+		})
+
 		local available = ts.get_available()
 
 		-- Filetypes whose name doesn't match a parser name; without this
