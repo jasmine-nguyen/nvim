@@ -1,8 +1,8 @@
 return {
 	{
 		"saghen/blink.cmp",
-		version = "v0.*",
-		event = "InsertEnter",
+		version = "1.*",
+		event = { "InsertEnter", "CmdlineEnter" },
 		dependencies = { "fang2hou/blink-copilot" },
 		opts = {
 			cmdline = {
