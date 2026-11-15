@@ -102,9 +102,14 @@ return {
 				desc = "blame line",
 				icon = "",
 			},
-			{ "<leader>gd", desc = "diff view" },
-			{ "<leader>gh", desc = "file history" },
-			{ "<leader>gH", desc = "branch history" },
+			{
+				"<leader>gd",
+				function()
+					Snacks.terminal("hunk diff", { win = { width = 0, height = 0 } })
+				end,
+				desc = "hunk diff",
+				icon = "",
+			},
 			-- Find / Picker (<leader>f)
 			{ "<leader>f", group = "find" },
 			{
