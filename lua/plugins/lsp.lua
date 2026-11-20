@@ -31,7 +31,7 @@ return {
 			-- never download those servers (and never error on them).
 			local tools_by_ft = {
 				agentscript = { "agentscript-lsp" },
-				apex = { "prettier" },
+				apex = { "apex-language-server", "prettier" },
 				css = { "prettierd" },
 				dockerfile = { "dockerfile-language-server" },
 				go = { "gopls", "golangci-lint-langserver" },
@@ -129,8 +129,19 @@ return {
 			})
 
 			-- Apex server setup
+			local apex_jar_path = vim.fn.stdpath("data") .. "/mason/share/apex-language-server/apex-jorje-lsp.jar"
 			vim.lsp.config("apex_ls", {
-				apex_jar_path = vim.fn.stdpath("data") .. "/mason/share/apex-language-server/apex-jorje-lsp.jar",
+				apex_jar_path = apex_jar_path,
+				root_dir = function(bufnr, on_dir)
+					-- The on-demand installer retries once the JAR is available.
+					if vim.fn.filereadable(apex_jar_path) == 0 then
+						return
+					end
+					local root = vim.fs.root(bufnr, { "sfdx-project.json" })
+					if root then
+						on_dir(root)
+					end
+				end,
 				apex_enable_semantic_errors = false, -- Whether to allow Apex Language Server to surface semantic errors
 				apex_enable_completion_statistics = false, -- Whether to allow Apex Language Server to collect telemetry on code completion usage
 			})

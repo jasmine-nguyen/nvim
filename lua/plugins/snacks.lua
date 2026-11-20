@@ -122,6 +122,7 @@ They make up everything.
 			},
 			sources = {
 				files = {
+					matcher = { smartcase = false, ignorecase = true },
 					follow = true,
 					hidden = true,
 					ignored = true,
